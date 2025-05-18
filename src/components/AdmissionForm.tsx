@@ -1,5 +1,5 @@
 import React, { FormEvent, useState} from "react";
-import { saveToFirebase } from "../services/firebaseService"; // Adjust the import path if needed
+import { saveToFirebase } from "../lib/firebase"; // Adjust the import path if needed
 import { getParentDetails } from "../services/ocrService"; // Import the new function
 
 import { toast } from "sonner";
@@ -263,6 +263,7 @@ const AdmissionForm: React.FC = () => {
 
   const fetchParentData = async () => {
   const data = await getParentDetails();
+  console.log(getParentDetails());
   console.log("Fetched parent data:", data);
   if (data && !parentDataFetched) {
     setFormData(prev => ({

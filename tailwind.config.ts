@@ -9,6 +9,11 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
+
+        "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -82,6 +87,14 @@ const config: Config = {
           950: "#082f49",
         },
         numl: {
+
+          
+          purple: {
+            light: "#3a4f7b",
+            DEFAULT: "#111827",
+            dark: "#111827",
+          },
+
           50: "#f0f9ff",
           100: "#e0f2fe",
           200: "#bae6fd",
@@ -94,6 +107,21 @@ const config: Config = {
           900: "#0c4a6e",
           950: "#082f49",
         },
+
+         "numl-purple": {
+      50: "#f5f3ff",
+      100: "#ede9fe",
+      200: "#ddd6fe",
+      300: "#c4b5fd",
+      400: "#a78bfa",
+      500: "#8b5cf6",
+      600: "#7c3aed",
+      700: "#6d28d9",
+      800: "#5b21b6",
+      900: "#4c1d95",
+    },
+
+
       },
       borderRadius: {
         lg: "var(--radius)",

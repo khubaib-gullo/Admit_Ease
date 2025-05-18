@@ -1,10 +1,31 @@
-// src/lib/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  
+} from "firebase/auth";
+
 import { getStorage } from "firebase/storage";
 
-// Replace with your own Firebase config from Firebase Console
+
+import type { User } from "firebase/auth";
+
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+// import { db } from "@/lib/firebase"; // Adjust the import path if needed
+import { collection, addDoc } from "firebase/firestore";
+
+// a8863096@gmail.com
+
 const firebaseConfig = {
   apiKey: "AIzaSyBs9u1LqfW0USY45rV9JyalBCIpDhY05TQ",
   authDomain: "admit-ease-e321a.firebaseapp.com",
@@ -15,8 +36,77 @@ const firebaseConfig = {
   measurementId: "G-81FZ7BYH4D"
 };
 
-const app = initializeApp(firebaseConfig);
-
-export const db = getFirestore(app);
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 export const storage = getStorage(app);
+
+
+/* ---------- helpers ---------- */
+
+export const googleSignIn = async (role: string): Promise<User> => {
+  const res = await signInWithPopup(auth, googleProvider);
+  const user = res.user;
+
+  /* create / update Firestore doc */
+  await setDoc(
+    doc(db, "users", user.uid),
+    {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      // photoURL: user.photoURL,
+      role,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+  return user;
+};
+
+export const emailSignUp = async (
+  name: string,
+  email: string,
+  password: string,
+  role: string
+): Promise<User> => {
+  const res = await createUserWithEmailAndPassword(auth, email, password);
+  const user = res.user;
+
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    name,
+    email,
+    role,
+    // photoURL: null,
+    createdAt: serverTimestamp(),
+  });
+
+  return user;
+};
+
+export const emailSignIn = (
+  email: string,
+  password: string
+) => signInWithEmailAndPassword(auth, email, password);
+
+export const fetchUserRole = async (uid: string): Promise<string | null> => {
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? (snap.data().role as string) : null;
+};
+
+
+
+
+export const saveToFirebase = async (collectionName: string, data: any) => {
+  try {
+    const collectionRef = collection(db, collectionName);
+    const docRef = await addDoc(collectionRef, data);
+    console.log("Document written with ID: ", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding document to Firestore:", error);
+    throw error;
+  }
+};

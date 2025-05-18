@@ -222,6 +222,12 @@ const Navbar = () => {
     navigate("/apply");                    //  ←  now it exists
   };
 
+
+  const handelSignIn = () => {
+    navigate("/login");                  //  ←  now it exists
+  };
+
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -239,16 +245,6 @@ const Navbar = () => {
     }
   };
 
-  const SomeComponent = () => {
-        const navigate = useNavigate(); 
-};
-
-
-  // const handleApplyNow = () => {
-  //   // Navigate to the local admission form application
-  //   navigate("/apply");
-  //   // window.open("http://localhost:5173/", "_blank");
-  // };
 
   return (
     <nav
@@ -304,6 +300,11 @@ const Navbar = () => {
           <div className="hidden md:flex space-x-3">
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handelSignIn()
+              }}
+
               className="px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               Sign In

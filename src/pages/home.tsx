@@ -7,16 +7,16 @@ import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
 import Programs from "../components/Programs";
 
-import { useEffect } from "react";
+// import { useEffect } from "react";
 
 const home = () => {
-  const handleApplyNow = () => {
-      // Navigate to the local admission form application
-      window.open("http://localhost:5173/", "_blank");
-    };
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // const handleApplyNow = () => {
+  //     // Navigate to the local admission form application
+  //     // window.open("http://localhost:5173/", "_blank");
+  //   };
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
