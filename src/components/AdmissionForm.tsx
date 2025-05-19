@@ -96,6 +96,21 @@ interface FormState {
   languages_known: string;
 }
 
+  const outputData =  {
+                  "cnic": "",
+                  "dob": "",
+                  "father_name": "",
+                  "fsc_board": "",
+                  "fsc_passing_year": "",
+                  "fsc_roll_number": "",
+                  "full_name": "",
+                  "gender": "",
+                  "matric_board": "",
+                  "matric_passing_year": "",
+                  "matric_roll_number": ""
+                   }
+
+
 const initialFormState: FormState = {
   // Personal Information
   full_name: "",
@@ -174,6 +189,7 @@ const AdmissionForm: React.FC = () => {
 
   // changes for OCR
   const [parentDataFetched, setParentDataFetched] = useState(false);
+  const [DataFetched, setDataFetched] = useState(false);
 
 
 
@@ -207,20 +223,101 @@ const AdmissionForm: React.FC = () => {
                               data: uploadedBase64Image,
                             },
                           },
-                          { text: "extract data and convert it into javascript object dont assign any variable for example {key : value } thats  it" }
+                          { text: `extract if you find any of these data fields and remeber that if you find  (Secondary School Certificate) then "total_marks_obtained" ,
+  "total_marks" , "roll_number" "board",  will be  matric_board, 
+                  
+                        matric_passing_year, 
+              
+                        matric_roll_number if you find (Higher Secondary School Certificate)  it will be  fsc_board
+        
+                        fsc_passing_year
+                       
+                    
+                        fsc_roll_number. here are  the fields you should extract 
+
+                    
+                        cnic
+                        : 
+                        ""
+                  
+                        dob
+                        : 
+                        ""
+               
+                 
+                    
+                        father_name
+                        : 
+                        ""
+                     
+                        fsc_board
+                        : 
+                        ""
+                        fsc_passing_year
+                        : 
+                        ""
+                    
+                        fsc_roll_number
+                        : 
+                        ""
+                   
+                        full_name
+                        : 
+                        ""
+                        gender
+                        : 
+                        ""
+                 
+                 
+                
+                        matric_board
+                        : 
+                        ""
+                        matric_passing_year
+                        : 
+                        ""
+                      
+                        matric_roll_number
+                        : 
+                        ""
+                    
+                
+                  data and convert it into javascript object dont assign any variable for example {key : value } thats  it`}
                         ],
                         });
 
-      console.log("################# Result   "+ result.text);
-      console.log(typeof(result.text))
-      
+      // console.log(typeof(result.text))
+
       const data = result.text
+      
       if (data){
-        const cleanedResponse = data.replace(/```(?:javascript)?\n?/g, '').replace(/```$/, '').trim();
+        const cleanedResponse = data.replace(/```(?:json)?\n?/g, '').replace(/```$/, '').trim();
+
+        // console.log("################# Result   "+ result.text);
+
         try {
-        const jsObject = JSON.parse(cleanedResponse);
-        console.log(jsObject);
-        console.log(jsObject.name);
+
+
+        const incomingData = JSON.parse(cleanedResponse);
+        // console.log("Cleaned response    "+ cleanedResponse);
+
+        console.log(`Api Object ############ ${incomingData}`);
+        console.log(incomingData.cnic);
+        if (outputData){
+          
+            Object.keys(incomingData).forEach((key: string) => {
+              if (!(outputData as any)[key] && incomingData[key]) {
+                (outputData as any)[key] = incomingData[key];
+              }
+            });
+             console.log("Updated formData:", outputData);
+            //  return outputData
+
+             fetchData(outputData);
+
+
+        }
+
       } catch (error) {
         console.error("Error parsing JSON:", error);
         console.error("Cleaned Response:", cleanedResponse); // Log the cleaned string for debugging
@@ -228,22 +325,11 @@ const AdmissionForm: React.FC = () => {
 
       }
 
-      
-
-      // const result = await model.generateContent([
-      //   prompt,
-      //   {
-      //     inlineData: {
-      //       data: uploadedBase64Image,
-      //       mimeType: uploadedMimeType,
-      //     },
-      //   },
-      // ]);
-
+  
       const response = result.text;
       if (response) {
         
-        console.log("Gemini API Output:");
+        // console.log("Gemini API Output:");
         setGeminiOutput(response);
         toast.success("Image analysis complete!", { description: "Check the console for the output." });
       } else {
@@ -263,7 +349,6 @@ const AdmissionForm: React.FC = () => {
 
   const fetchParentData = async () => {
   const data = await getParentDetails();
-  console.log(getParentDetails());
   console.log("Fetched parent data:", data);
   if (data && !parentDataFetched) {
     setFormData(prev => ({
@@ -273,6 +358,38 @@ const AdmissionForm: React.FC = () => {
     }));
     setAutoFilledFields(prev => [...prev, "father_name", "mother_name"]);
     setParentDataFetched(true);
+  }
+};
+
+
+const fetchData = async (object: Partial<FormState>) => {
+  const data: Partial<FormState> | null = object;
+  console.log("Fetched data:", data);
+
+  if (data) {
+    const filledFields: (keyof FormState)[] = [];
+
+    setFormData(prev => {
+      const updated = { ...prev };
+
+      (Object.keys(data) as (keyof FormState)[]).forEach(key => {
+        const newValue = data[key];
+        const currentValue = prev[key];
+
+        if (
+          typeof newValue === "string" &&
+          newValue.trim() !== "" &&
+          (currentValue === "" || currentValue.trim() === "")
+        ) {
+          updated[key] = newValue;
+          filledFields.push(key);
+        }
+      });
+
+      return updated;
+    });
+
+    setAutoFilledFields(prev => [...prev, ...filledFields]);
   }
 };
 
@@ -482,7 +599,7 @@ const AdmissionForm: React.FC = () => {
                   <FormField
                     id="dob"
                     label="Date of Birth"
-                    type="date"
+                    // type="date" 
                     value={formData.dob}
                     onChange={handleInputChange}
                     required
@@ -655,32 +772,32 @@ const AdmissionForm: React.FC = () => {
                   type="button"
                   onClick={() => {
             
-                  if (!parentDataFetched) {
-                      fetchParentData();
-                      }
+                  // if (!parentDataFetched) {
+                  //     fetchData();
+                  //     }
 
                     // Print the data for the current "Personal Info" tab
 
-                    console.log("--- PERSONAL INFORMATION (Before Next) ---");
-                    console.log({
-                      full_name: formData.full_name,
-                      cnic: formData.cnic,
-                      dob: formData.dob,
-                      father_name: formData.father_name,
-                      mother_name: formData.mother_name,
-                      gender: formData.gender,
-                      religion: formData.religion,
-                      marital_status: formData.marital_status,
-                      blood_group: formData.blood_group,
-                      address: formData.address,
-                      permanent_address: formData.permanent_address,
-                      city: formData.city,
-                      nationality: formData.nationality,
-                      phone: formData.phone,
-                      emergency_contact: formData.emergency_contact,
-                      email: formData.email,
-                      domicile: formData.domicile,
-                    });
+
+                    // console.log({
+                    //   full_name: formData.full_name,
+                    //   cnic: formData.cnic,
+                    //   dob: formData.dob,
+                    //   father_name: formData.father_name,
+                    //   mother_name: formData.mother_name,
+                    //   gender: formData.gender,
+                    //   religion: formData.religion,
+                    //   marital_status: formData.marital_status,
+                    //   blood_group: formData.blood_group,
+                    //   address: formData.address,
+                    //   permanent_address: formData.permanent_address,
+                    //   city: formData.city,
+                    //   nationality: formData.nationality,
+                    //   phone: formData.phone,
+                    //   emergency_contact: formData.emergency_contact,
+                    //   email: formData.email,
+                    //   domicile: formData.domicile,
+                    // });
                     setActiveTab("family")}
                   }
 
@@ -724,7 +841,7 @@ const AdmissionForm: React.FC = () => {
                     readOnly={autoFilledFields.includes("father_name")}
                   />
 
-                  <FormField
+                  {/* <FormField
                     id="mother_name"
                     label="Mother's Name"
                     value={formData.mother_name}
@@ -733,7 +850,7 @@ const AdmissionForm: React.FC = () => {
                     required
                     autoFilled={autoFilledFields.includes("mother_name")}
                     readOnly={autoFilledFields.includes("mother_name")}
-                  />
+                  /> */}
                 </div>
               </div>
 
@@ -805,7 +922,7 @@ const AdmissionForm: React.FC = () => {
                   Matriculation / O-Level Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <FormField
+                  {/* <FormField
                     id="matric_percentage"
                     label="Matric Percentage"
                     value={formData.matric_percentage}
@@ -814,7 +931,7 @@ const AdmissionForm: React.FC = () => {
                     required
                     autoFilled={autoFilledFields.includes("matric_percentage")}
                     readOnly={autoFilledFields.includes("matric_percentage")}
-                  />
+                  /> */}
 
                   <FormField
                     id="matric_board"
@@ -851,7 +968,7 @@ const AdmissionForm: React.FC = () => {
                     readOnly={autoFilledFields.includes("matric_roll_number")}
                   />
 
-                  <FormField
+                  {/* <FormField
                     id="matric_subjects"
                     label="Major Subjects"
                     value={formData.matric_subjects}
@@ -861,7 +978,7 @@ const AdmissionForm: React.FC = () => {
                     autoFilled={autoFilledFields.includes("matric_subjects")}
                     readOnly={autoFilledFields.includes("matric_subjects")}
                     className="md:col-span-2"
-                  />
+                  /> */}
                 </div>
               </div>
 
@@ -871,7 +988,7 @@ const AdmissionForm: React.FC = () => {
                   Intermediate / A-Level Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <FormField
+                  {/* <FormField
                     id="fsc_percentage"
                     label="FSc/Intermediate Percentage"
                     value={formData.fsc_percentage}
@@ -880,7 +997,7 @@ const AdmissionForm: React.FC = () => {
                     required
                     autoFilled={autoFilledFields.includes("fsc_percentage")}
                     readOnly={autoFilledFields.includes("fsc_percentage")}
-                  />
+                  /> */}
 
                   <FormField
                     id="fsc_board"
@@ -915,7 +1032,7 @@ const AdmissionForm: React.FC = () => {
                     readOnly={autoFilledFields.includes("fsc_roll_number")}
                   />
 
-                  <FormField
+                  {/* <FormField
                     id="fsc_subjects"
                     label="Major Subjects"
                     value={formData.fsc_subjects}
@@ -925,7 +1042,7 @@ const AdmissionForm: React.FC = () => {
                     autoFilled={autoFilledFields.includes("fsc_subjects")}
                     readOnly={autoFilledFields.includes("fsc_subjects")}
                     className="md:col-span-2"
-                  />
+                  /> */}
                 </div>
               </div>
 
@@ -981,20 +1098,20 @@ const AdmissionForm: React.FC = () => {
                     
                      {
         // Print the data for the current "Academic Information" tab
-              console.log("--- ACADEMIC INFORMATION (Before Next) ---");
-              console.log({
-                matric_percentage: formData.matric_percentage,
-                matric_board: formData.matric_board,
-                matric_passing_year: formData.matric_passing_year,
-                matric_roll_number: formData.matric_roll_number,
-                matric_subjects: formData.matric_subjects,
-                fsc_percentage: formData.fsc_percentage,
-                fsc_board: formData.fsc_board,
-                fsc_passing_year: formData.fsc_passing_year,
-                fsc_roll_number: formData.fsc_roll_number,
-                fsc_subjects: formData.fsc_subjects,
-                additional_qualification: formData.additional_qualification,
-              });
+              // console.log("--- ACADEMIC INFORMATION (Before Next) ---");
+              // console.log({
+              //   matric_percentage: formData.matric_percentage,
+              //   matric_board: formData.matric_board,
+              //   matric_passing_year: formData.matric_passing_year,
+              //   matric_roll_number: formData.matric_roll_number,
+              //   matric_subjects: formData.matric_subjects,
+              //   fsc_percentage: formData.fsc_percentage,
+              //   fsc_board: formData.fsc_board,
+              //   fsc_passing_year: formData.fsc_passing_year,
+              //   fsc_roll_number: formData.fsc_roll_number,
+              //   fsc_subjects: formData.fsc_subjects,
+              //   additional_qualification: formData.additional_qualification,
+              // });
          setActiveTab("program")}}
 
 
@@ -1174,20 +1291,20 @@ const AdmissionForm: React.FC = () => {
                   type="button"
                   onClick={() =>  {
                       // Print the data for the current "Academic Information" tab
-                      console.log("--- ACADEMIC INFORMATION (Before Next) ---");
-                      console.log({
-                        matric_percentage: formData.matric_percentage,
-                        matric_board: formData.matric_board,
-                        matric_passing_year: formData.matric_passing_year,
-                        matric_roll_number: formData.matric_roll_number,
-                        matric_subjects: formData.matric_subjects,
-                        fsc_percentage: formData.fsc_percentage,
-                        fsc_board: formData.fsc_board,
-                        fsc_passing_year: formData.fsc_passing_year,
-                        fsc_roll_number: formData.fsc_roll_number,
-                        fsc_subjects: formData.fsc_subjects,
-                        additional_qualification: formData.additional_qualification,
-                      });
+                      // console.log("--- ACADEMIC INFORMATION (Before Next) ---");
+                      // console.log({
+                      //   matric_percentage: formData.matric_percentage,
+                      //   matric_board: formData.matric_board,
+                      //   matric_passing_year: formData.matric_passing_year,
+                      //   matric_roll_number: formData.matric_roll_number,
+                      //   matric_subjects: formData.matric_subjects,
+                      //   fsc_percentage: formData.fsc_percentage,
+                      //   fsc_board: formData.fsc_board,
+                      //   fsc_passing_year: formData.fsc_passing_year,
+                      //   fsc_roll_number: formData.fsc_roll_number,
+                      //   fsc_subjects: formData.fsc_subjects,
+                      //   additional_qualification: formData.additional_qualification,
+                      // });
          setActiveTab("additional")}}
 
 
@@ -1314,8 +1431,8 @@ const AdmissionForm: React.FC = () => {
                   onClick={ () => {
         // Print the data for the current "Additional Information" tab
                   // console.log("--- ADDITIONAL INFORMATION (Before Submit) ---");
-                  console.log("--- ALL FORM DATA (Before Submit) ---");
-                  console.log(formData);
+                  // console.log("--- ALL FORM DATA (Before Submit) ---");
+                  // console.log(formData);
                 }
 
 

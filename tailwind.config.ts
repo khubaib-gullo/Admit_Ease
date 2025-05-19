@@ -90,9 +90,9 @@ const config: Config = {
 
           
           purple: {
-            light: "#3a4f7b",
+            light: "#111827",
             DEFAULT: "#111827",
-            dark: "#111827",
+            dark: "#3a4f7b",
           },
 
           50: "#f0f9ff",
