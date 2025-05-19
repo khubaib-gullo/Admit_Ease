@@ -202,11 +202,30 @@ import ThemeToggle from "./ThemeToggle";
 import { Globe, Menu, Search, X } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useNavigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
+
+
+
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate(); 
+
+  const [user, setUser] = useState<User | null>(null);
+  const auth = getAuth();
+
+
+   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+  
+  
+
 
 
   const navItems = [
@@ -218,6 +237,8 @@ const Navbar = () => {
     { name: "Contact", href: "#contact" },
   ];
 
+  
+
   const handleApplyNow = () => {
     navigate("/apply");                    //  ←  now it exists
   };
@@ -225,6 +246,15 @@ const Navbar = () => {
 
   const handelSignIn = () => {
     navigate("/login");                  //  ←  now it exists
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      console.log("Signed out");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
 
@@ -298,7 +328,7 @@ const Navbar = () => {
           <ThemeToggle />
 
           <div className="hidden md:flex space-x-3">
-            <a
+            {/* <a
               href="#"
               onClick={(e) => {
                 e.preventDefault();
@@ -318,7 +348,43 @@ const Navbar = () => {
               className="px-4 py-1.5 text-sm font-medium bg-numl-600 text-white rounded hover:bg-numl-700 transition-colors"
             >
               Apply Now
-            </a>
+            </a> */}
+            {user ? (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSignOut();
+                          }}
+                          className="px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          Sign Out
+                        </a>
+                      ) : (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handelSignIn();
+                          }}
+                          className="px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          Sign In
+                        </a>
+                      )}
+
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleApplyNow();
+                        }}
+                        className="px-4 py-1.5 text-sm font-medium bg-numl-600 text-white rounded hover:bg-numl-700 transition-colors"
+                      >
+                        Apply Now
+                      </a>
+
+
           </div>
 
           {/* Mobile Navigation Button */}

@@ -37,7 +37,7 @@ const LoginForm = () => {
       { merge: true }          // only creates/updates if missing
     );
 
-      navigate(role === "Admin" ? "/admin-dashboard" : "/user-dashboard");
+      navigate(role === "Admin" ? "/admin-dashboard" : "/apply");
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     }

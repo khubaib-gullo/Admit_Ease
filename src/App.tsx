@@ -18,6 +18,8 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/home";
 import SignupForm from "./components/auth/SignUpPanel";
 import LoginForm from "./components/auth/LoginForm";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 
 const queryClient = new QueryClient();
@@ -30,7 +32,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/apply" element={<Index />} />
+          {/* <Route path="/apply" element={<Index />} /> */}
+           <Route
+              path="/apply"
+              element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              }
+            />
 
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />

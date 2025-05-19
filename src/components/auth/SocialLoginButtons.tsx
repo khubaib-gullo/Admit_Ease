@@ -15,7 +15,7 @@ const SocialLoginButtons = ({ role }: { role: string }) => {
       toast.success("Signed in with Google");
 
       // 🎯 redirect by role
-      navigate(role === "Admin" ? "/admin-dashboard" : "/user-dashboard");
+      navigate(role === "Admin" ? "/admin-dashboard" : "/apply");
     } catch (err: any) {
       toast.error(err.message || "Google sign‑in failed");
     }
