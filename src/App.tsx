@@ -20,6 +20,12 @@ import SignupForm from "./components/auth/SignUpPanel";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import EditProfile from "./pages/EditProfile";
+import AdmissionForm from "./pages/ApplicationForm";
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/admin"
+
+import StudentForm from "./pages/studentForm";
 
 
 const queryClient = new QueryClient();
@@ -41,9 +47,21 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
+          {/* <Route path="/apply" element={<Index />} /> */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+
+           <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/admission-form" element={<AdmissionForm />} />
+
+                
+
+            <Route path='/admin' element={<AdminDashboard/>} />
+
+            <Route path="/application/:id" element={<StudentForm/>} />
+
+            <Route path="*" element={<NotFound />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -44,6 +44,18 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+
+     /* AdmItEase specific colors */
+    --admitease-primary: 211 100% 50%; /* #007bff */
+    --admitease-dark: 208 80% 15%; /* #0a2940 */
+    --admitease-light: 209 100% 38%; /* #1a73e8 */
+    --admitease-text: 210 50% 15%; /* Dark text color */
+    --admitease-muted: 210 30% 60%; /* Muted text color */
+    --admitease-background: 210 50% 98%; /* Light background */
+    --admitease-warning: 38 100% 50%; /* Warning color */
+    --admitease-danger: 0 100% 50%; /* Danger/Error color */
+    --admitease-success: 120 100% 35%; /* Success color */
   }
 
   .dark {
@@ -82,6 +94,9 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+
+    
   }
 }
 

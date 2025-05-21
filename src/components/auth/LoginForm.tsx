@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { emailSignIn, fetchUserRole } from "../../lib/firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
+import { auth } from "@/lib/firebase"; // use shared instance
+
 
 
 const LoginForm = () => {
@@ -26,6 +29,8 @@ const LoginForm = () => {
       const cred = await emailSignIn(email, password);
       const role =
         (await fetchUserRole(cred.user.uid)) || selectedRole || "User";
+
+      await setPersistence(auth, browserLocalPersistence);
       toast.success("Login successful!");
       await setDoc(
       doc(db, "users", cred.user.uid),
@@ -37,7 +42,7 @@ const LoginForm = () => {
       { merge: true }          // only creates/updates if missing
     );
 
-      navigate(role === "Admin" ? "/admin-dashboard" : "/apply");
+      navigate(role === "Admin" ? "/admin" : "/apply");
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     }

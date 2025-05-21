@@ -1,4 +1,3 @@
-import { initializeApp } from "firebase/app";
 import {
   getAuth,
   GoogleAuthProvider,
@@ -9,7 +8,7 @@ import {
 } from "firebase/auth";
 
 import { getStorage } from "firebase/storage";
-
+import { initializeApp, getApps, getApp } from "firebase/app";
 
 import type { User } from "firebase/auth";
 
@@ -36,7 +35,13 @@ const firebaseConfig = {
   measurementId: "G-81FZ7BYH4D"
 };
 
-export const app = initializeApp(firebaseConfig);
+// export const app = initializeApp(firebaseConfig);
+// export const auth = getAuth(app);
+
+
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
@@ -99,14 +104,20 @@ export const fetchUserRole = async (uid: string): Promise<string | null> => {
 
 
 
-export const saveToFirebase = async (collectionName: string, data: any) => {
-  try {
-    const collectionRef = collection(db, collectionName);
-    const docRef = await addDoc(collectionRef, data);
-    console.log("Document written with ID: ", docRef.id);
-    return docRef.id;
-  } catch (error) {
-    console.error("Error adding document to Firestore:", error);
-    throw error;
-  }
+// export const saveToFirebase = async (collectionName: string, data: any) => {
+//   try {
+//     const collectionRef = collection(db, collectionName);
+//     const docRef = await addDoc(collectionRef, data);
+//     console.log("Document written with ID: ", docRef.id);
+//     return docRef.id;
+//   } catch (error) {
+//     console.error("Error adding document to Firestore:", error);
+//     throw error;
+//   }
+// };
+
+export const saveToFirebase = async (collection: string, data: any, docId: string) => {
+  const docRef = doc(db, collection, docId);
+  await setDoc(docRef, data);
+  return docId;
 };

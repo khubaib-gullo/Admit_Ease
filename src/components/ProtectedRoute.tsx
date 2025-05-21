@@ -1,12 +1,24 @@
-import React from "react";
-import { getAuth } from "firebase/auth";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "@/lib/firebase"; // use shared instance
 import { toast } from "sonner";
 
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("Auth state:", firebaseUser);
+      setUser(firebaseUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (user === undefined) {
+    return <div className="text-center p-8">Checking authentication...</div>;
+  }
 
   if (!user) {
     toast.error("Please log in to apply.");
@@ -14,9 +26,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return <>{children}</>;
-
-
-//   return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;

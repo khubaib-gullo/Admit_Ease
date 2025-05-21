@@ -204,6 +204,9 @@ import { cn } from "../lib/utils";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 
+import { query, collection, where, getDocs } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 
 
@@ -213,17 +216,41 @@ const Navbar = () => {
   const navigate = useNavigate(); 
 
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const auth = getAuth();
 
 
+  //  useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+  //     setUser(currentUser);
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+  
+
    useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
+      if (currentUser) {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const role = userDoc.data().role;
+          setIsAdmin(role === "admin");
+
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => unsubscribe();
   }, []);
-  
+
   
 
 
@@ -239,9 +266,53 @@ const Navbar = () => {
 
   
 
-  const handleApplyNow = () => {
-    navigate("/apply");                    //  ←  now it exists
-  };
+  // const handleApplyNow = () => {
+  //   navigate("/apply");                    //  ←  now it exists
+  // };
+
+
+const handleApplyNow = async () => {
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("User not logged in");
+    return;
+  }
+
+  try {
+    // 🔍 Fetch user role from Firestore
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+
+      if (userData.role === "admin") {
+        // 🛠️ Admin detected — go to admin dashboard
+        navigate("/admin");
+        return;
+      }
+    }
+
+    // 👤 If not admin, check if user has already applied
+    const q = query(
+      collection(db, "status"),
+      where("student_id", "==", user.uid)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // ✅ Already applied — redirect to dashboard
+      navigate("/dashboard");
+    } else {
+      // 🚀 Not applied yet — go to apply page
+      navigate("/apply");
+    }
+  } catch (error) {
+    console.error("Error checking application status or role:", error);
+  }
+};
 
 
   const handelSignIn = () => {
@@ -373,17 +444,16 @@ const Navbar = () => {
                         </a>
                       )}
 
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleApplyNow();
-                        }}
-                        className="px-4 py-1.5 text-sm font-medium bg-numl-600 text-white rounded hover:bg-numl-700 transition-colors"
-                      >
-                        Apply Now
-                      </a>
-
+              <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleApplyNow();
+              }}
+                          className="px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {isAdmin ? "Admin Dashboard" : "Apply Now"}
+            </a>
 
           </div>
 
@@ -426,7 +496,7 @@ const Navbar = () => {
               >
                 Sign In
               </a>
-              <a
+              {/* <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -435,7 +505,19 @@ const Navbar = () => {
                 className="block px-3 py-2 mt-2 rounded-md text-base font-medium bg-numl-600 text-white hover:bg-numl-700 transition-colors text-center"
               >
                 Apply Now
-              </a>
+              </a> */}
+
+
+              <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleApplyNow();
+              }}
+                          className="px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {isAdmin ? "Admin Dashboard" : "Apply Now"}
+            </a>
             </div>
           </div>
         </div>

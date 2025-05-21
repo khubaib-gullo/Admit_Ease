@@ -1,6 +1,10 @@
 import { googleSignIn } from "../../lib/firebase";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
+import { auth } from "@/lib/firebase"; // use shared instance
+
+
 
 const SocialLoginButtons = ({ role }: { role: string }) => {
   const navigate = useNavigate();
@@ -12,10 +16,12 @@ const SocialLoginButtons = ({ role }: { role: string }) => {
         return;
       }
       await googleSignIn(role);
+      await setPersistence(auth, browserLocalPersistence);
+      
       toast.success("Signed in with Google");
 
       // 🎯 redirect by role
-      navigate(role === "Admin" ? "/admin-dashboard" : "/apply");
+      navigate(role === "Admin" ? "/admin" : "/apply");
     } catch (err: any) {
       toast.error(err.message || "Google sign‑in failed");
     }

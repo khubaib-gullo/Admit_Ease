@@ -36,7 +36,8 @@ import FormField from "./FormField";
 
 import { GoogleGenAI} from "@google/genai";
 import DocumentUpload from "./DocumentUpload";
-
+import { auth, db } from "@/lib/firebase"; // adjust import path as needed
+import { doc, setDoc, collection } from "firebase/firestore";
 
 
 
@@ -400,43 +401,86 @@ const fetchData = async (object: Partial<FormState>) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const submitForm = async () => {
-    try {
-      setIsSubmitting(true);
+  // const submitForm = async () => {
+  //   try {
+  //     setIsSubmitting(true);
 
-      // Add timestamp
-      const dataToSubmit = {
-        ...formData,
-        submitted_at: new Date().toISOString(),
-      };
+  //     // Add timestamp
+  //     const dataToSubmit = {
+  //       ...formData,
+  //       submitted_at: new Date().toISOString(),
+  //     };
 
-      // Save to Firebase
-      const studentId = await saveToFirebase("students", dataToSubmit);
+  //     // Save to Firebase
+  //     const studentId = await saveToFirebase("students", dataToSubmit);
 
-      toast.success("Application submitted successfully", {
-        description: `Your application has been submitted with reference ID: ${studentId}`,
-      });
+  //     toast.success("Application submitted successfully", {
+  //       description: `Your application has been submitted with reference ID: ${studentId}`,
+  //     });
 
-      // Reset form after successful submission
-      setFormData(initialFormState);
-      setAutoFilledFields([]);
-      setShowPreview(false);
-    } catch (error: any) {
-      toast.error("Failed to submit application", {
-        description:
-          error.message ||
-          "There was an error submitting your application. Please try again.",
-      });
-      console.error("Form submission error:", error);
-    } finally {
-      setIsSubmitting(false);
+  //     // Reset form after successful submission
+  //     setFormData(initialFormState);
+  //     setAutoFilledFields([]);
+  //     setShowPreview(false);
+  //   } catch (error: any) {
+  //     toast.error("Failed to submit application", {
+  //       description:
+  //         error.message ||
+  //         "There was an error submitting your application. Please try again.",
+  //     });
+  //     console.error("Form submission error:", error);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+
+
+const submitForm = async () => {
+  try {
+    setIsSubmitting(true);
+
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("You must be logged in to submit the application.");
     }
-  };
+
+    const dataToSubmit = {
+      ...formData,
+      submitted_at: new Date().toISOString(),
+      uid: user.uid, // Optionally store UID in the document
+    };
+
+    // Use UID as the document ID to link data to the user
+    await setDoc(doc(db, "students", user.uid), dataToSubmit);
+
+    toast.success("Application submitted successfully", {
+      description: `Your application has been submitted with reference ID: ${user.uid}`,
+    });
+
+    // Reset form after successful submission
+    setFormData(initialFormState);
+    setAutoFilledFields([]);
+    setShowPreview(false);
+  } catch (error: any) {
+    toast.error("Failed to submit application", {
+      description:
+        error.message ||
+        "There was an error submitting your application. Please try again.",
+    });
+    console.error("Form submission error:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
  
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+
+  const user = auth.currentUser;
 
     try {
       setIsSubmitting(true);
@@ -445,12 +489,30 @@ const fetchData = async (object: Partial<FormState>) => {
         ...formData,
         submitted_at: new Date().toISOString(),
       };
+      
+      if(user){
 
-      const studentId = await saveToFirebase("students", dataToSubmit);
+         await saveToFirebase("students", dataToSubmit, user.uid);
 
-      toast.success("Application submitted successfully", {
-        description: `Your application has been submitted with reference ID: ${studentId}`,
+           const statusRef = doc(collection(db, "status")); // auto-generate doc ID
+          await setDoc(statusRef, {
+            student_id: user.uid,
+            approve: false,
+          });
+
+
+          toast.success("Application submitted successfully", {
+        description: `Your application has been submitted with reference ID:}`,
       });
+      }
+      else{
+        console.log("user is nulllll")
+      }
+      // const studentId = await saveToFirebase("students", dataToSubmit);
+     
+
+
+     
 
       // Reset form after success
       setFormData(initialFormState);
@@ -649,23 +711,7 @@ const fetchData = async (object: Partial<FormState>) => {
                     autoFilled={autoFilledFields.includes("blood_group")}
                     readOnly={autoFilledFields.includes("blood_group")}
                   />
-                  <input
-                    type="text"
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, full_name: e.target.value })
-                    }
-                  />
 
-                  <input
-                    type="text"
-                    name="cnic"
-                    value={formData.cnic}
-                    onChange={(e) =>
-                      setFormData({ ...formData, cnic: e.target.value })
-                    }
-                  />
                 </div>
               </div>
 
@@ -1097,7 +1143,7 @@ const fetchData = async (object: Partial<FormState>) => {
                   onClick={() =>
                     
                      {
-        // Print the data for the current "Academic Information" tab
+            // Print the data for the current "Academic Information" tab
               // console.log("--- ACADEMIC INFORMATION (Before Next) ---");
               // console.log({
               //   matric_percentage: formData.matric_percentage,
